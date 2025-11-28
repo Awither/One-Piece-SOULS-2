@@ -10,60 +10,113 @@
   <div class="page">
     <header class="page-header">
       <h1>Soul Fruit Control Panel</h1>
-      <p>Harvest souls, track Soul Power Units (SPU), create homies, and generate custom Soul Fruit abilities.</p>
+      <p>
+        Track harvested souls, spend Soul Power Units (SPU) to create and upgrade homies, shape soul-infused domains,
+        and generate abilities for your One Piece–style Big Mom soul fruit.
+      </p>
     </header>
 
-    <!-- PANEL 1: ADD NEW SOUL -->
+    <!-- PANEL 1: HARVEST A SOUL -->
     <section class="card card-collapsible" data-panel="1">
       <div class="card-header">
-        <h2>1. Add a New Soul</h2>
+        <h2>1. Harvest a Soul</h2>
         <button class="collapse-toggle" type="button">▼</button>
       </div>
       <div class="card-body">
         <div class="grid-2">
           <div class="field">
-            <label for="soul-name">Soul Owner / Title</label>
-            <input id="soul-name" type="text" placeholder="Brave Captain, Terrified Villager, Yonko, etc." />
+            <label for="soul-name">Target Name / Title</label>
+            <input id="soul-name" type="text" placeholder="Panicked Vice Admiral, Dragon, Bandit #3" />
           </div>
 
           <div class="field">
-            <label for="soul-power">Raw Power (0–20)</label>
-            <input id="soul-power" type="number" min="0" max="20" value="5" />
-            <small>Overall combat / narrative strength of the creature.</small>
+            <label for="soul-raw">Raw Might Rating (0–20)</label>
+            <input id="soul-raw" type="number" min="0" max="20" value="5" />
+            <small>Overall strength impression in One Piece terms.</small>
           </div>
 
           <div class="field">
-            <label for="soul-fear">Fear at Extraction (0–10)</label>
-            <input id="soul-fear" type="number" min="0" max="10" value="5" />
-            <small>Higher fear makes the soul easier to control and stronger for offense.</small>
+            <label for="soul-template">Template Tier</label>
+            <select id="soul-template">
+              <!-- filled by JS -->
+            </select>
+            <small>Peasant → elite fighter → boss → mythical / divine threat.</small>
           </div>
 
           <div class="field">
-            <label for="soul-attachment">Emotional Weight / Attachment (0–10)</label>
-            <input id="soul-attachment" type="number" min="0" max="10" value="5" />
-            <small>Important loved ones, strong dreams, or legendary status raise this.</small>
+            <label for="soul-traits">Traits / Flavor Tags (optional)</label>
+            <input id="soul-traits" type="text" placeholder="brave, cruel, beast, storm, gluttonous" />
+            <small>Used later to flavor homie personalities and domains.</small>
+          </div>
+        </div>
+
+        <hr class="section-separator" />
+
+        <h3 class="subheading">Fear Check & Terror Roll Helper</h3>
+        <p class="helper-text">
+          When you attempt a Soul Rip, the target makes a Fear/Wisdom save against your Soul DC. If they fail,
+          you roll a Terror Roll to see how much of their soul you rip out.
+        </p>
+
+        <div class="grid-3">
+          <div class="field">
+            <label for="soul-dc">Soul DC Used</label>
+            <input id="soul-dc" type="number" min="1" value="17" />
+            <small>From your Soul DC helper or spell save DC.</small>
+          </div>
+
+          <div class="field">
+            <label for="soul-save-roll">Target's Save Result</label>
+            <input id="soul-save-roll" type="number" min="1" value="12" />
+            <small>Include all their bonuses and the d20 result.</small>
+          </div>
+
+          <div class="field">
+            <label for="soul-failure-margin">Failure Margin (auto)</label>
+            <input id="soul-failure-margin" type="number" readonly />
+            <small>Calculated as Soul DC − Save Result (min 0).</small>
+          </div>
+        </div>
+
+        <div class="grid-3">
+          <div class="field">
+            <label for="soul-d20-roll">Terror d20 Roll</label>
+            <input id="soul-d20-roll" type="number" min="1" max="20" value="10" />
+            <small>d20 rolled after they fail the fear save.</small>
+          </div>
+
+          <div class="field">
+            <label for="soul-terror-roll">Total Terror Roll (auto)</label>
+            <input id="soul-terror-roll" type="number" readonly />
+            <small>d20 + Failure Margin.</small>
+          </div>
+
+          <div class="field">
+            <label for="soul-maxhp-lost">Max HP Lost (suggested)</label>
+            <input id="soul-maxhp-lost" type="number" readonly />
+            <small>For notes only; DM can adjust.</small>
           </div>
         </div>
 
         <div class="actions-row">
-          <button id="btn-calc-soul" type="button" class="btn-primary">Calculate Soul Level</button>
-          <button id="btn-add-soul" type="button" class="btn-secondary">Add to Soul Library</button>
+          <button id="btn-calc-soul" type="button" class="btn-primary">Calculate Soul Level & SPU</button>
+          <button id="btn-add-soul" type="button" class="btn-secondary">Add to Soul Bank</button>
         </div>
 
         <div id="soul-calc-output" class="calc-output"></div>
       </div>
     </section>
 
-    <!-- PANEL 2: MY SOULS -->
+    <!-- PANEL 2: SOUL BANK -->
     <section class="card card-collapsible" data-panel="2">
       <div class="card-header">
-        <h2>2. My Stored Souls</h2>
+        <h2>2. Soul Bank & Captured Spirits</h2>
         <button class="collapse-toggle" type="button">▼</button>
       </div>
       <div class="card-body">
         <div class="totals-row">
           <span>Total Soul Power (SPU): <strong id="total-spu">0</strong></span>
-          <span>Spent SPU: <strong id="spent-spu">0</strong></span>
+          <span>SPU Invested in Homies / Domains: <strong id="spent-spu">0</strong></span>
           <span>Available SPU: <strong id="available-spu">0</strong></span>
         </div>
         <div id="soul-list" class="soul-list">
@@ -72,142 +125,83 @@
       </div>
     </section>
 
-    <!-- PANEL 3: SPEND SPU ON BOONS -->
+    <!-- PANEL 3: HOMIE WORKSHOP -->
     <section class="card card-collapsible" data-panel="3">
       <div class="card-header">
-        <h2>3. Spend SPU on Boons & Contracts</h2>
+        <h2>3. Homie Workshop & Upgrades</h2>
         <button class="collapse-toggle" type="button">▼</button>
       </div>
       <div class="card-body">
-        <div class="field">
-          <label for="buff-target-select">Current Beneficiary</label>
-          <select id="buff-target-select"></select>
-          <small>Boons are tracked per target (Soul Fruit user, each ally, each homie).</small>
-        </div>
+        <p class="helper-text">
+          Spend SPU from the Soul Bank to create and upgrade homies. When a homie is destroyed, you can pay a revival
+          cost based on how much SPU you invested in them.
+        </p>
 
-        <div class="ally-add-row">
-          <input id="ally-name-input" type="text" placeholder="Add new ally / homie target name" />
-          <button id="btn-add-ally" type="button" class="btn-secondary">Add Target</button>
-        </div>
-
-        <div class="field">
-          <label for="buff-tools-select">Advanced Tools</label>
-          <select id="buff-tools-select">
-            <option value="hide">Hide tools</option>
-            <option value="custom">Custom Boon Creator only</option>
-            <option value="dc">Soul DC Helper only</option>
-            <option value="both">Show both</option>
-          </select>
-        </div>
-
-        <div id="buff-cards-container" class="buff-card-grid">
-          <!-- buff cards injected here -->
-        </div>
-
-        <div id="selected-buffs-summary" class="selected-buffs-summary">
-          <!-- selected buffs for current target -->
-        </div>
-
-        <!-- CUSTOM BOON CREATOR -->
-        <div id="custom-buff-section" class="advanced-section hidden">
-          <h3>Custom Boon / Contract</h3>
-          <div class="grid-3">
-            <div class="field">
-              <label for="custom-buff-name">Name</label>
-              <input id="custom-buff-name" type="text" placeholder="Soul-Forged Shell, Terror Pact, etc." />
-            </div>
-            <div class="field">
-              <label for="custom-buff-cost">Base SPU Cost (first copy)</label>
-              <input id="custom-buff-cost" type="number" min="1" value="10" />
-            </div>
-            <div class="field">
-              <label for="custom-buff-min">Minimum Total SPU Required (optional)</label>
-              <input id="custom-buff-min" type="number" min="0" value="0" />
-            </div>
+        <div class="homie-toolbar">
+          <div class="field homie-filter-field">
+            <label for="homie-type-filter">Show Homies of Type</label>
+            <select id="homie-type-filter">
+              <option value="all">All Types</option>
+              <option value="minor">Minor Homies</option>
+              <option value="territory">Territory Homies</option>
+              <option value="buff">Buff Homies</option>
+              <option value="signature">Signature Homies</option>
+            </select>
           </div>
-          <div class="field">
-            <label for="custom-buff-desc">Description</label>
-            <textarea id="custom-buff-desc" rows="2" placeholder="What does this boon do mechanically? AC, HP, damage, movement, conditions, etc."></textarea>
+
+          <div class="homie-create-buttons">
+            <button id="btn-add-minor-homie" type="button" class="btn-secondary">+ Minor Homie</button>
+            <button id="btn-add-territory-homie" type="button" class="btn-secondary">+ Territory Homie</button>
+            <button id="btn-add-buff-homie" type="button" class="btn-secondary">+ Buff Homie</button>
+            <button id="btn-add-signature-homie" type="button" class="btn-secondary">+ Signature Homie</button>
           </div>
-          <button id="btn-add-custom-buff" type="button" class="btn-secondary">Add Custom Boon</button>
         </div>
 
-        <!-- SOUL DC HELPER -->
-        <div id="dc-helper-section" class="advanced-section hidden">
-          <h3>Soul DC Helper</h3>
-          <div class="grid-3">
-            <div class="field">
-              <label for="dc-helper-sl">Soul Level (SL)</label>
-              <input id="dc-helper-sl" type="number" min="1" max="10" value="5" />
-              <small>Use your strongest stored soul or an average.</small>
-            </div>
-            <div class="field">
-              <label for="dc-helper-prof">Proficiency Bonus</label>
-              <input id="dc-helper-prof" type="number" value="3" />
-            </div>
-            <div class="field">
-              <label for="dc-helper-mod">Spellcasting / Ability Modifier</label>
-              <input id="dc-helper-mod" type="number" value="4" />
-            </div>
-          </div>
-          <button id="btn-calc-dc" type="button" class="btn-secondary">Calculate Suggested DC</button>
-          <div id="dc-helper-output" class="calc-output"></div>
+        <div id="homie-list" class="homie-card-grid">
+          <!-- homie cards injected here -->
         </div>
       </div>
     </section>
 
-    <!-- PANEL 4: CREATE HOMIE -->
+    <!-- PANEL 4: DOMAINS & TERRITORY HOMIES -->
     <section class="card card-collapsible" data-panel="4">
       <div class="card-header">
-        <h2>4. Create a Homie / Soul Construct</h2>
+        <h2>4. Domains & Territory Homies</h2>
         <button class="collapse-toggle" type="button">▼</button>
       </div>
       <div class="card-body">
-        <div class="grid-2">
-          <div class="field">
-            <label for="homie-name">Homie Name</label>
-            <input id="homie-name" type="text" placeholder="Sun Homie, Living Cutlass, Castle Spirit, etc." />
-          </div>
-          <div class="field">
-            <label for="homie-body">Body / Vessel</label>
-            <input id="homie-body" type="text" placeholder="Sword, ship, house, storm cloud, fire, etc." />
-          </div>
-        </div>
+        <p class="helper-text">
+          Shape Totto Land–style domains: castles, forests, ships, and cities where the very roads, buildings,
+          and terrain are homies that obey you.
+        </p>
 
         <div class="grid-2">
           <div class="field">
-            <label for="homie-durability">Body Durability Tier (1–10)</label>
-            <input id="homie-durability" type="number" min="1" max="10" value="5" />
-            <small>How tough the physical object or elemental body is.</small>
+            <label for="domain-name">Domain Name</label>
+            <input id="domain-name" type="text" placeholder="Candy Castle, Forest of Screams, Soul-Paved City" />
           </div>
           <div class="field">
-            <label for="homie-element">Element / Theme</label>
-            <input id="homie-element" type="text" placeholder="Fire, storm, sweets, shadowy knight, etc." />
+            <label for="domain-tier">Domain Tier (1–10)</label>
+            <input id="domain-tier" type="number" min="1" max="10" value="5" />
+            <small>Bigger, more complex domains have stronger lair actions.</small>
           </div>
         </div>
 
         <div class="field">
-          <label for="homie-soul-mode">Which Souls Power It?</label>
-          <select id="homie-soul-mode">
-            <option value="active">Use active souls</option>
-            <option value="all">Use all stored souls</option>
-            <option value="selected">Use selected souls below</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label for="homie-soul-select">Custom Soul Selection</label>
-          <select id="homie-soul-select" multiple></select>
-          <small>Select specific souls when “Use selected souls below” is chosen.</small>
+          <label for="domain-homie-select">Territory Homies Assigned to This Domain</label>
+          <select id="domain-homie-select" multiple></select>
+          <small>Select any homies of type "Territory" to bind them to this domain.</small>
         </div>
 
         <div class="actions-row">
-          <button id="btn-generate-homie" type="button" class="btn-primary">Generate Homie Stat Block</button>
-          <button id="btn-edit-buffs-homie" type="button" class="btn-secondary">Edit Boons for This Homie</button>
+          <button id="btn-generate-domain" type="button" class="btn-primary">Generate / Update Domain Card</button>
+          <button id="btn-edit-homies-domain" type="button" class="btn-secondary">
+            Edit Homies for This Domain
+          </button>
         </div>
 
-        <div id="homie-stat-block" class="homie-stat-block">
-          <!-- generated homie card -->
+        <div id="domain-card" class="domain-card-container">
+          <!-- generated domain card -->
         </div>
       </div>
     </section>
@@ -215,36 +209,51 @@
     <!-- PANEL 5: ASK THE SOULS (AI) -->
     <section class="card card-collapsible" data-panel="5">
       <div class="card-header">
-        <h2>5. Ask the Souls (AI)</h2>
+        <h2>5. Ask the Souls (AI Homie & Ability Generator)</h2>
         <button class="collapse-toggle" type="button">▼</button>
       </div>
       <div class="card-body">
         <div class="field">
           <label for="ai-notes">Extra Notes / Theme</label>
-          <textarea id="ai-notes" rows="3" placeholder="Example: terrifying battlefield controller, homie-focused build, defensive tank, etc."></textarea>
+          <textarea
+            id="ai-notes"
+            rows="3"
+            placeholder="Examples: healing cake nurse homies, storm homie that guards the castle, weapon homie that stores souls."
+          ></textarea>
+          <small>
+            The AI will see your soul bank, homies, and domains, then propose abilities and forms that fit your current
+            power level.
+          </small>
         </div>
 
         <div class="actions-row">
-          <button id="btn-generate-abilities" type="button" class="btn-primary">Generate Soul Abilities with AI</button>
-          <button id="btn-add-empty-ability" type="button" class="btn-secondary">Add Empty Ability Card</button>
+          <button id="btn-generate-abilities" type="button" class="btn-primary">
+            Generate Homie Abilities with AI
+          </button>
+          <button id="btn-add-empty-ability" type="button" class="btn-secondary">
+            Add Empty Ability Card
+          </button>
         </div>
 
         <div id="ability-cards-container" class="ability-card-grid">
-          <!-- AI ability cards -->
+          <!-- ability cards injected here -->
         </div>
       </div>
     </section>
 
-    <!-- PANEL 6: SUMMARY -->
+    <!-- PANEL 6: SOUL PARTY DASHBOARD -->
     <section class="card card-collapsible" data-panel="6">
       <div class="card-header">
-        <h2>6. Current Summary (Soul Party Dashboard)</h2>
+        <h2>6. Soul Party Dashboard</h2>
         <button class="collapse-toggle" type="button">▼</button>
       </div>
       <div class="card-body">
-        <p>At-a-glance views for the Soul Fruit user, each ally, and each homie. Use this as a quick reference at the table.</p>
+        <p>
+          At-a-glance views for you (Soul Fruit user), each ally, each homie, and each domain. Use this section as a
+          quick reference at the table or print it as a handout.
+        </p>
         <div id="summary-grid" class="summary-grid">
-          <!-- summary cards -->
+          <!-- summary cards injected here -->
         </div>
 
         <div class="summary-actions">
@@ -252,7 +261,7 @@
           <button id="btn-print" type="button" class="btn-secondary">Print Quick Reference</button>
           <button id="btn-reset" type="button" class="btn-danger">Reset All Data</button>
         </div>
-        <p class="small-note">Data is automatically saved in your browser (localStorage).</p>
+        <p class="small-note">All data is automatically saved in your browser using localStorage.</p>
       </div>
     </section>
   </div>
