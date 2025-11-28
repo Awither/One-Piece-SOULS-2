@@ -1,5 +1,5 @@
-// /api/generate-shadow-abilities.js
-// Vercel serverless function for calling OpenAI to generate abilities.
+// api/generate-soul-abilities.js
+// Vercel serverless function for calling OpenAI to generate Soul Fruit abilities.
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -16,54 +16,66 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { shadows, totalAsp, spentAsp, availableAsp, selectedBuffIds, notes } =
-      req.body || {};
+    const {
+      souls = [],
+      totalSpu = 0,
+      spentSpu = 0,
+      availableSpu = 0,
+      selectedBuffIds = [],
+      notes = ""
+    } = req.body || {};
 
-    const shadowSummary =
-      !Array.isArray(shadows) || !shadows.length
-        ? "No shadows currently stored."
-        : shadows
+    const soulSummary =
+      !Array.isArray(souls) || !souls.length
+        ? "No souls currently stored."
+        : souls
             .map(
               (s) =>
-                `Name: ${s.name || "(Unnamed)"} | SL ${s.shadowLevel} | Raw Might ${
-                  s.rawMight
-                } | Template: ${s.ttLabel} | Active: ${
-                  s.active ? "Yes" : "No"
-                }`
+                `Name: ${s.name || "(Unnamed)"} | SL ${s.soulLevel} | SPU ${
+                  s.spu
+                } | Power ${s.power} | Fear ${s.fear} | Attachment ${
+                  s.attachment
+                } | Active: ${s.active ? "Yes" : "No"}`
             )
             .join("\n");
 
     const activeBuffsText =
       !Array.isArray(selectedBuffIds) || !selectedBuffIds.length
-        ? "No active buffs."
+        ? "No active boons."
         : selectedBuffIds.join(", ");
 
     const userPrompt = `
-You are helping design powerful but playable One Piece-style shadow abilities for a D&D-like campaign.
+You are helping design powerful but playable One Piece–style Soul Fruit abilities
+for a D&D-like campaign. The Soul Fruit works like Big Mom’s: it steals lifespan / souls,
+stores them as a resource (SPU = Soul Power Units), and can create “homies” (sentient
+objects or elementals) or empower allies.
 
-Current Shadow Fruit state:
+Current Soul Fruit state:
 
-Total ASP: ${totalAsp}
-Spent ASP: ${spentAsp}
-Available ASP: ${availableAsp}
+Total SPU: ${totalSpu}
+Spent SPU: ${spentSpu}
+Available SPU: ${availableSpu}
 
-Shadows:
-${shadowSummary}
+Souls:
+${soulSummary}
 
-Selected buffs (IDs or names): ${activeBuffsText}
+Selected boons / buffs (IDs or names): ${activeBuffsText}
 
 Extra notes / theme from user:
 ${notes || "(none)"}
 
 TASK:
-1. Propose 3–5 unique, named shadow techniques (attacks or utility), using cool One Piece-style names. 
-   - For each, give: Name, Short description, Suggested damage dice or mechanical effect, and any save/DC if relevant.
-2. Propose 1–3 transformation forms that fit the current level of power (based on ASP and shadows).
-   - Briefly describe the form, what changes visually, and what it mechanically boosts.
-3. Propose 1–2 special abilities for reanimated corpses powered by these shadows.
-   - Make them flavorful and tied to the idea that the corpse has physical durability plus shadow-based powers.
+1. Propose 3–5 unique, named Soul Fruit techniques (attacks or utility).
+   - For each: Name, short description, clear mechanical effect (damage dice, save type / DC, conditions, action type, range, duration).
+   - These should feel like high-level D&D abilities flavored with Big Mom–style soul control.
+2. Propose 1–3 homie or soul-construct abilities.
+   - Focus on what special things homies can do in combat or utility (movement tricks, resistances, auras, etc.).
+3. Propose 1–2 soul-contract or “lifespan bargain” style abilities.
+   - These should trade lifespan or SPU for big effects, with clear costs and risks.
 
-Output in a clean, game-usable text format, with clear headings and bullet points. Avoid referencing D&D rules directly by name (no "CR"), but it's okay to use generic terms like "attack roll", "saving throw", "DC", and "action".
+Output in a clean, game-usable plain text format with clear headings and bullet-like lines,
+but DO NOT use markdown syntax. It's okay to use terms like "attack roll", "saving throw",
+"DC", and "action". Avoid referencing D&D by name or talking about rules out of character.
 `;
 
     const openaiRes = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -73,17 +85,17 @@ Output in a clean, game-usable text format, with clear headings and bullet point
         Authorization: `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: "gpt-4.1-mini",
+        model: "gpt-4o-mini",
         messages: [
           {
             role: "system",
             content:
-              "You are an expert One Piece + D&D homebrew designer. You create powerful but playable shadow abilities with cool names and clear mechanics."
+              "You are an expert One Piece + D&D homebrew designer. You create powerful but playable Soul Fruit and homie abilities with clear mechanics."
           },
           { role: "user", content: userPrompt }
         ],
-        temperature: 0.85,
-        max_tokens: 900
+        temperature: 0.9,
+        max_tokens: 1100
       })
     });
 
@@ -102,6 +114,8 @@ Output in a clean, game-usable text format, with clear headings and bullet point
     res.status(200).json({ text });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Internal server error", details: String(err) });
+    res
+      .status(500)
+      .json({ error: "Internal server error", details: String(err) });
   }
 }
