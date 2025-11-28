@@ -2,8 +2,8 @@
   --bg: #050711;
   --bg-card: #101322;
   --bg-card-alt: #161a2a;
-  --accent: #ff9f5b;
-  --accent-soft: rgba(255, 159, 91, 0.18);
+  --accent: #8b5bff;
+  --accent-soft: rgba(139, 91, 255, 0.15);
   --accent-danger: #ff4b6b;
   --border: #252a3d;
   --text-main: #f7f7ff;
@@ -24,15 +24,9 @@ html,
 body {
   margin: 0;
   padding: 0;
-  background: radial-gradient(
-    circle at top,
-    #231727 0,
-    #050711 55%,
-    #010106 100%
-  );
+  background: radial-gradient(circle at top, #191b2e 0, #050711 48%, #010106 100%);
   color: var(--text-main);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 .page {
@@ -56,14 +50,15 @@ body {
   color: var(--text-muted);
 }
 
+.muted {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
 /* Cards / panels */
 
 .card {
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.03),
-    rgba(255, 255, 255, 0.01)
-  );
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
   border-radius: var(--radius-lg);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-soft);
@@ -76,12 +71,7 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 12px 18px;
-  background: radial-gradient(
-    circle at top left,
-    #31203a 0,
-    #141628 45%,
-    #090b18 100%
-  );
+  background: radial-gradient(circle at top left, #1d1731 0, #111326 40%, #090b18 100%);
   border-bottom: 1px solid var(--border);
 }
 
@@ -152,7 +142,8 @@ body {
 }
 
 .field textarea {
-  resize: vertical;
+  resize: none; /* JS auto-resizes height */
+  overflow: hidden;
 }
 
 .field small {
@@ -196,7 +187,7 @@ body {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #ffb471, #ff5b95);
+  background: linear-gradient(135deg, #9b63ff, #e95bff);
   color: white;
 }
 
@@ -210,9 +201,34 @@ body {
   color: #fff;
 }
 
+.btn-primary:disabled,
+.btn-secondary:disabled,
+.btn-danger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Stack-style small circular buttons */
+
+.stack-btn {
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-soft);
+  font-size: 12px;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* PANEL 1 & 2 – SOUL BANK */
+
 /* Soul list cards */
 
-.soul-list {
+#soul-list {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 10px;
@@ -253,6 +269,11 @@ body {
   color: var(--text-muted);
 }
 
+.soul-terror-info {
+  font-size: 11px;
+  color: var(--text-soft);
+}
+
 .soul-active-row {
   display: flex;
   align-items: center;
@@ -260,7 +281,7 @@ body {
   font-size: 11px;
 }
 
-/* calc output */
+/* Calculation output & helper box */
 
 .calc-output {
   margin-top: 8px;
@@ -272,139 +293,159 @@ body {
   color: var(--text-soft);
 }
 
-/* Buffs */
+/* PANEL 3 – HOMIE WORKSHOP */
 
-.ally-add-row {
+.homie-toolbar {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
+  align-items: center;
   margin-bottom: 10px;
 }
 
-.buff-card-grid {
+.homie-toolbar select {
+  min-width: 150px;
+}
+
+.homie-card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 10px;
-  margin-bottom: 10px;
 }
 
-.buff-card {
+.homie-card {
   background: var(--bg-card-alt);
   border-radius: 14px;
   border: 1px solid var(--border);
-  padding: 8px 10px;
+  padding: 10px 12px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   font-size: 12px;
 }
 
-.buff-card-header {
+.homie-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 6px;
 }
 
-.buff-name {
+.homie-name-input {
+  flex: 1;
+  font-size: 14px;
   font-weight: 600;
+  background: rgba(0, 0, 0, 0.45);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 6px 8px;
+  color: var(--text-main);
 }
 
-.buff-meta {
+.homie-type-tag {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.homie-bound-field input {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+/* Tier grid */
+
+.homie-tier-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.homie-tier-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 4px 6px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.homie-tier-label {
+  font-size: 12px;
+  color: var(--text-soft);
+}
+
+.homie-tier-cost {
   font-size: 11px;
   color: var(--text-muted);
 }
 
-.buff-description {
-  font-size: 11px;
-  color: var(--text-soft);
-}
-
-.buff-stacks-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 4px;
-}
-
-.buff-stacks-row span {
-  font-size: 11px;
-}
-
-.stack-controls {
+.homie-tier-controls {
   display: inline-flex;
   gap: 4px;
 }
 
-.stack-btn {
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.03);
-  color: var(--text-soft);
-  font-size: 12px;
-  width: 22px;
-  height: 22px;
+/* Investment & status */
+
+.homie-invest-row {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--text-soft);
+}
+
+.homie-status-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-.selected-buffs-summary {
-  margin-top: 10px;
+  gap: 6px;
+  margin-top: 4px;
   font-size: 12px;
-  padding: 8px 10px;
-  border-radius: 10px;
-  border: 1px dashed var(--border);
-  background: rgba(3, 6, 15, 0.8);
 }
 
-.selected-buffs-summary ul {
-  padding-left: 18px;
+.homie-status-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
 }
 
-/* Advanced sections */
-
-.advanced-section {
-  margin-top: 14px;
-  padding-top: 10px;
-  border-top: 1px dashed var(--border);
+.homie-notes-field textarea {
+  background: rgba(0, 0, 0, 0.45);
 }
 
-.hidden {
-  display: none !important;
-}
+/* PANEL 4 – DOMAINS & TERRITORY HOMIES */
 
-/* Homie stat block */
-
-.homie-stat-block {
-  margin-top: 14px;
-}
-
-.homie-card {
-  background: radial-gradient(
-    circle at top,
-    #362137 0,
-    #151627 60%,
-    #050711 100%
-  );
+.domain-card {
+  background: radial-gradient(circle at top, #201934 0, #141626 60%, #050711 100%);
   border-radius: var(--radius-xl);
   border: 1px solid var(--border);
   padding: 12px 14px 14px;
   box-shadow: var(--shadow-soft);
+  font-family: Arial, sans-serif;
 }
 
-.homie-header-row {
+.domain-header-row {
   display: flex;
   justify-content: space-between;
   gap: 8px;
   margin-bottom: 6px;
 }
 
-.homie-name {
+.domain-name {
   font-weight: 700;
   letter-spacing: 0.05em;
 }
 
-.homie-tier-tag {
+.domain-tier-tag {
   font-size: 11px;
   padding: 2px 8px;
   border-radius: 999px;
@@ -413,45 +454,42 @@ body {
   align-self: flex-start;
 }
 
-.homie-pill-row {
+.domain-pill-row {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
   margin-bottom: 8px;
 }
 
-.homie-pill {
+.domain-pill {
   background: rgba(0, 0, 0, 0.4);
   border-radius: 999px;
   padding: 4px 10px;
   font-size: 11px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* Homie sections */
-
-.homie-section {
-  font-family: Arial, sans-serif;
+.domain-section {
   margin-top: 6px;
 }
 
-.homie-section h4 {
+.domain-section h4 {
   margin: 4px 0;
   font-size: 13px;
 }
 
-.homie-section ul {
+.domain-section ul {
   margin: 0;
   padding-left: 18px;
 }
 
-.homie-section li {
+.domain-section li {
   font-size: 12px;
   color: var(--text-soft);
   margin-bottom: 2px;
 }
 
-/* Ability cards */
+/* PANEL 5 – ABILITY CARDS (Ask the Souls) */
 
 .ability-card-grid {
   display: grid;
@@ -460,12 +498,7 @@ body {
 }
 
 .ability-card {
-  background: radial-gradient(
-    circle at top left,
-    #40203f 0,
-    #181729 45%,
-    #090b17 100%
-  );
+  background: radial-gradient(circle at top left, #26193c 0, #151627 45%, #090b17 100%);
   border-radius: 20px;
   border: 1px solid var(--border);
   padding: 10px 12px;
@@ -487,12 +520,17 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 6px;
 }
 
 .ability-name-row input {
   flex: 1;
-  margin-right: 8px;
+  margin-right: 2px;
   font-weight: 600;
+}
+
+.ability-name-row select {
+  min-width: 150px;
 }
 
 .ability-role {
@@ -525,7 +563,7 @@ body {
   padding: 4px 9px;
 }
 
-/* Summary grid */
+/* PANEL 6 – SUMMARY GRID (Soul Party Dashboard) */
 
 .summary-grid {
   display: grid;
@@ -535,12 +573,7 @@ body {
 }
 
 .summary-card {
-  background: radial-gradient(
-    circle at top,
-    #322238 0,
-    #151627 55%,
-    #050711 100%
-  );
+  background: radial-gradient(circle at top, #221933 0, #141627 55%, #050711 100%);
   border-radius: 18px;
   border: 1px solid var(--border);
   padding: 10px 12px 12px;
@@ -588,6 +621,11 @@ body {
   font-size: 11px;
 }
 
+.summary-at-a-glance {
+  font-size: 12px;
+  color: var(--text-soft);
+}
+
 .summary-list {
   margin: 0;
   padding-left: 16px;
@@ -599,39 +637,31 @@ body {
 
 .summary-notes {
   margin-top: 4px;
+  font-size: 12px;
+  color: var(--text-soft);
+  padding: 5px 7px;
 }
 
 .summary-notes[contenteditable="true"] {
   border-radius: 10px;
   border: 1px dashed rgba(255, 255, 255, 0.12);
-  padding: 5px 7px;
   min-height: 40px;
 }
 
-/* details element for buff breakdown */
-
-.summary-details {
-  margin-top: 2px;
-}
-
-.summary-details summary {
-  cursor: pointer;
-  font-size: 11px;
-  color: var(--text-muted);
-}
-
-/* Summary actions */
-
-.summary-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 10px;
-}
+/* Small note text */
 
 .small-note {
   margin-top: 4px;
   font-size: 11px;
   color: var(--text-muted);
+}
+
+/* Global textarea no-scroll fix inside summary / abilities / homies */
+
+.summary-notes textarea,
+.ability-card textarea,
+.homie-card textarea {
+  overflow: hidden;
 }
 
 /* Print styles */
@@ -646,7 +676,10 @@ body {
   .card-collapsible:not([data-panel="6"]),
   .summary-actions,
   .small-note,
-  .collapse-toggle {
+  .collapse-toggle,
+  .homie-toolbar,
+  .actions-row,
+  .totals-row {
     display: none !important;
   }
 
