@@ -1,14 +1,16 @@
-// Vercel serverless function: /api/generate-soul-abilities
+// api/generate-soul-abilities.js
+//
+// Vercel serverless function.
 //
 // Expects POST with JSON body:
-// { mode: "homieAttack" | "domainLair" | "genericAbility", ... }
+//   { mode: "homieAttack" | "domainLair" | "genericAbility", ... }
 //
 // Responds with:
-// { success: true, text: string, structured?: object }
+//   { success: true, text: string, structured?: object }
 // or
-// { success: false, error: string }
+//   { success: false, error: string }
 
-export default async function handler(req, res) {
+module.exports = async function (req, res) {
   if (req.method !== "POST") {
     res
       .status(405)
@@ -27,8 +29,8 @@ export default async function handler(req, res) {
 
   let body;
   try {
-    // In Vercel / Next.js, req.body is already parsed if content-type is JSON.
-    body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+    body =
+      typeof req.body === "string" ? JSON.parse(req.body) : req.body;
     if (!body || typeof body !== "object") {
       throw new Error("Empty or invalid body.");
     }
@@ -108,7 +110,9 @@ export default async function handler(req, res) {
       error: err.message || "Unknown server error",
     });
   }
-}
+};
+
+// ---------- Prompt builder ----------
 
 function buildPrompts(body) {
   const { mode } = body;
@@ -295,6 +299,8 @@ Return a JSON object with:
 
   return { systemPrompt: baseSystemPrompt, userPrompt };
 }
+
+// ---------- Parse structured JSON from model ----------
 
 function parseStructuredJSON(content) {
   const rawText = typeof content === "string" ? content : "";
