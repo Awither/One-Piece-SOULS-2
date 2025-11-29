@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/generate-soul-abilities.js": {
+      "runtime": "nodejs20.x"
+    }
+  }
+}
