@@ -1,10 +1,7 @@
 // Vercel serverless function: /api/generate-soul-abilities
 //
 // Expects POST with JSON body:
-// {
-//   mode: "homieAttack" | "domainLair" | "genericAbility",
-//   ...context data...
-// }
+// { mode: "homieAttack" | "domainLair" | "genericAbility", ... }
 //
 // Responds with:
 // { success: true, text: string, structured?: object }
@@ -13,57 +10,74 @@
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    res.status(405).json({ success: false, error: "Method not allowed" });
+    res
+      .status(405)
+      .json({ success: false, error: "Method not allowed" });
     return;
   }
 
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    res
-      .status(500)
-      .json({ success: false, error: "OPENAI_API_KEY is not set in the environment." });
+    res.status(500).json({
+      success: false,
+      error: "OPENAI_API_KEY is not set in the environment.",
+    });
     return;
   }
 
   let body;
   try {
-    body = req.body || {};
+    // In Vercel / Next.js, req.body is already parsed if content-type is JSON.
+    body = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+    if (!body || typeof body !== "object") {
+      throw new Error("Empty or invalid body.");
+    }
   } catch (err) {
-    res.status(400).json({ success: false, error: "Invalid JSON body." });
+    res.status(400).json({
+      success: false,
+      error: "Invalid JSON body: " + err.message,
+    });
     return;
   }
 
   const { mode } = body;
   if (!mode) {
-    res.status(400).json({ success: false, error: "Missing 'mode' in request body." });
+    res.status(400).json({
+      success: false,
+      error: "Missing 'mode' in request body.",
+    });
     return;
   }
 
   try {
     const { systemPrompt, userPrompt } = buildPrompts(body);
 
-    const openaiRes = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-4.1-mini",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-        temperature: 0.9,
-      }),
-    });
+    const openaiRes = await fetch(
+      "https://api.openai.com/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt },
+          ],
+          temperature: 0.9,
+        }),
+      }
+    );
 
     const text = await openaiRes.text();
     if (!openaiRes.ok) {
       console.error("OpenAI API error:", text);
-      res
-        .status(openaiRes.status)
-        .json({ success: false, error: `OpenAI API error: ${text}` });
+      res.status(openaiRes.status).json({
+        success: false,
+        error: `OpenAI API error: ${text}`,
+      });
       return;
     }
 
@@ -89,7 +103,10 @@ export default async function handler(req, res) {
     });
   } catch (err) {
     console.error("generate-soul-abilities handler error:", err);
-    res.status(500).json({ success: false, error: err.message || "Unknown server error" });
+    res.status(500).json({
+      success: false,
+      error: err.message || "Unknown server error",
+    });
   }
 }
 
@@ -102,8 +119,8 @@ function buildPrompts(body) {
   const soulSummary = souls
     .map(
       (s) =>
-        `${s.name} — SoL ${s.soulLevel}, SPU ${s.spu}, traits: ${s.traits || "none"}, notes: ${
-          s.notes || "—"
+        `${s.name} — SoL ${s.soulLevel}, SPU ${s.spu}, traits: ${
+          s.traits || "none"
         }`
     )
     .join("\n");
@@ -111,23 +128,24 @@ function buildPrompts(body) {
   const homieSummary = homies
     .map(
       (h) =>
-        `${h.name} [${h.type}] — role ${h.role || "?"}, HP ${h.hp || "?"}, AC ${
-          h.ac || "?"
-        }, move ${h.move || "?"}, SPU ${h.totalSPUInvested || 0}, traits: ${h.traits || "none"}`
+        `${h.name} [${h.type}] — role ${h.role || "?"}, HP ${
+          h.hp || "?"
+        }, AC ${h.ac || "?"}, move ${
+          h.move || "?"
+        }, SPU ${h.totalSPUInvested || 0}, traits: ${
+          h.traits || "none"
+        }`
     )
     .join("\n");
 
   const domainSummary = domains
     .map(
       (d) =>
-        `${d.name} — Tier ${d.tier}, SPU ${d.spuInvested}, Fear DC ${d.fearDC}, size ${
+        `${d.name} — Tier ${d.tier}, SPU ${
+          d.spuInvested
+        }, Fear DC ${d.fearDC}, size ${
           d.size || "?"
-        }, personality: ${d.personality || "none"}, homies: ${
-          (d.homieIds || [])
-            .map((id) => homies.find((h) => h.id === id)?.name)
-            .filter(Boolean)
-            .join(", ") || "none"
-        }`
+        }, personality: ${d.personality || "none"}`
     )
     .join("\n");
 
@@ -149,7 +167,7 @@ VERY IMPORTANT:
     const userPrompt = `
 MODE: homieAttack
 
-The user wants a signature attack for a specific Homie.
+The user wants a signature multi-step attack for a specific Homie.
 
 Homie:
 ${JSON.stringify(homie, null, 2)}
@@ -191,7 +209,8 @@ Return a JSON object with:
     const userPrompt = `
 MODE: domainLair
 
-The user wants 3-5 lair actions for this Domain in the style of D&D 5e lair actions mixed with One Piece soul logic.
+The user wants 3-5 lair actions for this Domain in the style of D&D 5e lair actions
+mixed with One Piece soul logic.
 
 Domain:
 ${JSON.stringify(domain, null, 2)}
@@ -199,7 +218,7 @@ ${JSON.stringify(domain, null, 2)}
 All Domains:
 ${domainSummary || "None"}
 
-Territory & other Homies:
+Homies:
 ${homieSummary || "None"}
 
 Return a JSON object with:
@@ -211,7 +230,7 @@ Return a JSON object with:
     return { systemPrompt: baseSystemPrompt, userPrompt };
   }
 
-  // genericAbility (combo / general abilities)
+  // genericAbility
   const {
     assignTo,
     powerLevel,
@@ -261,9 +280,6 @@ ${powerLevel}
 Optional soul cost (SPU):
 ${soulCost}
 
-Design a single ability that feels like a Big Mom / soul-driven move,
-balancing extremely high power with clear mechanical hooks.
-
 Return a JSON object with:
 {
   "abilityName": string,
@@ -285,7 +301,6 @@ function parseStructuredJSON(content) {
   let structured = null;
 
   try {
-    // In case the model wraps JSON in extra text, extract first {...} block
     const firstBrace = rawText.indexOf("{");
     const lastBrace = rawText.lastIndexOf("}");
     if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
@@ -295,7 +310,11 @@ function parseStructuredJSON(content) {
       structured = JSON.parse(rawText);
     }
   } catch (err) {
-    console.error("Failed to parse structured JSON from model:", err, rawText);
+    console.error(
+      "Failed to parse structured JSON from model:",
+      err,
+      rawText
+    );
     structured = null;
   }
 
